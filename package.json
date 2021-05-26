@@ -1,0 +1,16 @@
+{
+  "name": "invoice-builder",
+  "version": "1.0.0",
+  "description": "Utility tool to build invoices",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Coya",
+  "license": "ISC",
+  "dependencies": {
+    "dateformat": "^4.5.1",
+    "html5-to-pdf": "^4.0.1",
+    "twig": "^1.15.4"
+  }
+}
