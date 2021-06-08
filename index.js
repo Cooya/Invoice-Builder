@@ -9,7 +9,7 @@ const readProcessArgs = require('./read_process_args');
 const { outputFolder, templatesFolder } = require('./config');
 
 (async () => {
-	const { template } = readProcessArgs();
+	const { template, test, html } = readProcessArgs();
 	if(!template)
 		throw new Error('Template is missing');
 
@@ -28,18 +28,19 @@ const { outputFolder, templatesFolder } = require('./config');
 	if(String(invoiceNumber).length === 1) invoiceNumber = '00' + invoiceNumber;
 	else if(String(invoiceNumber).length === 2) invoiceNumber = '0' + invoiceNumber;
 	invoiceNumber = new Date().getFullYear() + '-' + invoiceNumber;
-	console.log(invoiceNumber);
 
 	// render the twig template
-	fs.writeFileSync('tmp', twigTemplate.render({
+	fs.writeFileSync('tmp.html', twigTemplate.render({
 		invoiceNumber,
 		today: dateformat(new Date, 'dd/mm/yyyy'),
 		fromDate: 'XX/XX/2021',
 		toDate: 'XX/XX/2021'
 	}));
 
-	const outputFile = `${outputFolder}facture_${invoiceNumber.replace(/-/g, '_')}.pdf`;
-	console.log(outputFile);
-	execSync(`node_modules/.bin/html5-to-pdf tmp > "${outputFile}"`);
-	fs.unlinkSync('tmp');
+	if(!html) {
+		const outputFile = `${!test ? outputFolder : './'}facture_${invoiceNumber.replace(/-/g, '_')}.pdf`;
+		execSync(`node_modules/.bin/html5-to-pdf tmp.html > "${outputFile}"`);
+		fs.unlinkSync('tmp.html');
+		console.log(outputFile);
+	}
 })();
