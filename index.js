@@ -9,7 +9,7 @@ const readProcessArgs = require('./read_process_args');
 const { outputFolder, templatesFolder } = require('./config');
 
 (async () => {
-	const { template, test, html } = readProcessArgs();
+	const { template, test, html, fromDate, toDate } = readProcessArgs();
 	if(!template)
 		throw new Error('Template is missing');
 
@@ -33,8 +33,8 @@ const { outputFolder, templatesFolder } = require('./config');
 	fs.writeFileSync('tmp.html', twigTemplate.render({
 		invoiceNumber,
 		today: dateformat(new Date, 'dd/mm/yyyy'),
-		fromDate: 'XX/XX/2021',
-		toDate: 'XX/XX/2021'
+		fromDate,
+		toDate
 	}));
 
 	if(!html) {
