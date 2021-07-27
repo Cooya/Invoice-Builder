@@ -9,7 +9,7 @@ const readProcessArgs = require('./read_process_args');
 const { outputFolder, templatesFolder, tasks } = require('./config');
 
 (async () => {
-	let { task, template, test, html, fromDate, toDate } = readProcessArgs();
+	let { task, template, test, html, fromDate, toDate, price } = readProcessArgs();
 	if(!task) {
 		if(!template)
 			throw new Error('Template is missing');
@@ -22,7 +22,7 @@ const { outputFolder, templatesFolder, tasks } = require('./config');
 	if(!tasks[task])
 		throw new Error(`Unknown task "${task}"`);
 
-	({ template, fromDate, toDate } = tasks[task]);
+	({ template, fromDate, toDate, price } = tasks[task]);
 
 	// load the twig template
 	const twigTemplate = Twig.twig({
@@ -45,7 +45,8 @@ const { outputFolder, templatesFolder, tasks } = require('./config');
 		invoiceNumber,
 		today: dateformat(new Date(), 'dd/mm/yyyy'),
 		fromDate: typeof fromDate === 'function' ? fromDate() : fromDate,
-		toDate: typeof toDate === 'function' ? toDate() : toDate
+		toDate: typeof toDate === 'function' ? toDate() : toDate,
+		price
 	}));
 
 	if(!html) {
