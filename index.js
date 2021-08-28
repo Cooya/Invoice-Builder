@@ -7,6 +7,7 @@ const readProcessArgs = require('./read_process_args');
 
 // configuration
 const { outputFolder, templatesFolder, tasks } = require('./config');
+const tracking = require('./tracking.json');
 
 (async () => {
 	let { task, template, test, html, fromDate, toDate, price } = readProcessArgs();
@@ -17,6 +18,12 @@ const { outputFolder, templatesFolder, tasks } = require('./config');
 			throw new Error('From date is missing');
 		if(!toDate)
 			throw new Error('To date is missing');
+	}
+
+	if(task === 'delays') {
+		computeDelays();
+		console.log(tracking);
+		return;
 	}
 
 	if(!tasks[task])
@@ -50,9 +57,28 @@ const { outputFolder, templatesFolder, tasks } = require('./config');
 	}));
 
 	if(!html) {
+		// transform the html into pdf
 		const outputFile = `${!test ? outputFolder : './'}facture_${invoiceNumber.replace(/-/g, '_')}.pdf`;
 		execSync(`node_modules/.bin/html5-to-pdf tmp.html > "${outputFile}"`);
 		fs.unlinkSync('tmp.html');
 		console.log(outputFile);
+
+		// update the tracking file
+		tracking[task].lastInvoiceDate = dateformat(new Date(), 'dd/mm/yyyy');
+		computeDelays();
+		fs.writeFileSync('./tracking.json', JSON.stringify(tracking, null, 4));
 	}
 })();
+
+function computeDelays() {
+	for(let [partnerName, { lastInvoiceDate, lastPaymentDate }] of Object.entries(tracking)) {
+		// compute the threshold date
+		lastInvoiceDate = new Date(lastInvoiceDate.split('/').reverse().join('-'));
+		lastPaymentDate = lastPaymentDate && new Date(lastPaymentDate.split('/').reverse().join('-'));
+		const thresholdDate = lastPaymentDate < lastInvoiceDate ? new Date() : null;
+
+		// compute the delay
+		const delay = thresholdDate && Math.round((thresholdDate.getTime() - lastInvoiceDate.getTime()) / (1000 * 3600 * 24));
+		tracking[partnerName].delay = delay ? `${delay}j` : null;
+	}
+}
